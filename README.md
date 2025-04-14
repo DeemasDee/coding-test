@@ -35,7 +35,7 @@ A responsive full-stack web application for viewing and interacting with sales r
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/DeemasDee/coding-test.git
-cd backend
+cd coding-test
 ```
 
 ### 2. Backend Setup (FastAPI)
