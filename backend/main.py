@@ -1,33 +1,40 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
+from pydantic import BaseModel
 import json
+import os
 
 app = FastAPI()
 
-# Load dummy data
-with open("dummyData.json", "r") as f:
-    DUMMY_DATA = json.load(f)
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/api/data")
-def get_data():
-    """
-    Returns dummy data (e.g., list of users).
-    """
-    return DUMMY_DATA
+# Load dummy data
+DATA_FILE = os.path.join(os.path.dirname(__file__), "dummyData.json")
+with open(DATA_FILE, "r") as f:
+    sales_data = json.load(f)
+
+@app.get("/api/sales-reps")
+def get_sales_reps():
+    return sales_data["salesReps"]
+
+# Define request model for AI endpoint
+class AIRequest(BaseModel):
+    question: str
 
 @app.post("/api/ai")
-async def ai_endpoint(request: Request):
-    """
-    Accepts a user question and returns a placeholder AI response.
-    (Optionally integrate a real AI model or external service here.)
-    """
-    body = await request.json()
-    user_question = body.get("question", "")
-    
-    # Placeholder logic: echo the question or generate a simple response
-    # Replace with real AI logic as desired (e.g., call to an LLM).
-    return {"answer": f"This is a placeholder answer to your question: {user_question}"}
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+def ai_response(request: AIRequest):
+    question = request.question.lower()
+    # Simple rule-based mock logic
+    if "top" in question and "sales" in question:
+        return {"response": "The top sales representative is Alice Smith with 5 successful deals."}
+    elif "skills" in question:
+        return {"response": "Sales reps generally have skills like negotiation, CRM, and communication."}
+    else:
+        return {"response": f"Sorry, I don’t understand the question: '{request.question}'"}
